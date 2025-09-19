@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Minimum total line coverage required to pass (edit as you like)
+  COVERAGE_MIN: "70"
+
+jobs:
+  lint-test-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17 (for Android/Gradle)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+          cache: "gradle"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "stable"
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: ${{ runner.os }}-pub-
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      # ---------- LINT ----------
+      - name: Flutter analyze (fail on warnings & infos)
+        run: flutter analyze --fatal-infos --fatal-warnings
+
+      # ---------- TEST + COVERAGE ----------
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Install lcov & bc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov bc
+
+      - name: (Optional) Filter generated files from coverage
+        run: |
+          lcov --remove coverage/lcov.info \
+            'lib/**.g.dart' 'lib/**.freezed.dart' 'lib/**.mocks.dart' \
+            'lib/**/generated/**' \
+            -o coverage/lcov.info
+
+      - name: Generate HTML coverage report
+        run: genhtml coverage/lcov.info --output-directory coverage/html
+
+      - name: Enforce coverage threshold
+        run: |
+          TOTAL=$(lcov --summary coverage/lcov.info | awk '/lines\.*:/{print $2}' | sed 's/%//')
+          echo "Total coverage: ${TOTAL}% (required >= ${COVERAGE_MIN}%)"
+          if [ "$(echo "$TOTAL < $COVERAGE_MIN" | bc)" -eq 1 ]; then
+            echo "Coverage below threshold"; exit 1
+          fi
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: coverage/html
+
+      - name: Upload raw lcov.info
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcov
+          path: coverage/lcov.info

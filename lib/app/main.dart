@@ -1,8 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:pokemondex/core/di.dart';
+import 'package:pokemondex/domain/repository/pokemon_repository.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initDI();
+
+  // --- Smoke test (optional) ---
+  try {
+    final repo = sl<PokemonRepository>();
+    // final list = await repo.listAll(20); // hits GraphQL through HttpClient -> Dio
+    // debugPrint('✅ fetched ${list.length} pokemons, first: ${list.first}');
+    final pokemon = await repo.fetchPokemonDetail("UG9rZW1vbjowMTU");
+    debugPrint('pokemon: $pokemon');
+  } catch (e, s) {
+    debugPrint('❌ repo smoke test failed: $e\n$s');
+  }
+
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
