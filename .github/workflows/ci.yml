@@ -57,6 +57,7 @@ jobs:
           lcov --remove coverage/lcov.info \
             'lib/**.g.dart' 'lib/**.freezed.dart' 'lib/**.mocks.dart' \
             'lib/**/generated/**' \
+            --ignore-errors unused \
             -o coverage/lcov.info
 
       - name: Generate HTML coverage report
