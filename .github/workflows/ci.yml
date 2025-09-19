@@ -1,3 +1,4 @@
+# .github/workflows/ci.yml
 name: CI
 
 on:
@@ -9,7 +10,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Minimum total line coverage required to pass (edit as you like)
   COVERAGE_MIN: "70"
 
 jobs:
@@ -23,27 +23,24 @@ jobs:
       - name: Set up Java 17 (for Android/Gradle)
         uses: actions/setup-java@v4
         with:
-          distribution: "zulu"
+          distribution: zulu
           java-version: "17"
-          cache: "gradle"
+          cache: gradle
 
-      - name: Set up Flutter
+      - name: Set up Flutter (latest stable channel)
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "stable"
+          channel: stable          # ✅ use channel; do NOT set flutter-version: "stable"
+          cache: true
 
-      - name: Cache pub packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: ${{ runner.os }}-pub-
+      - name: Flutter doctor (debug)
+        run: flutter doctor -v
 
-      - name: Flutter pub get
+      - name: Pub get
         run: flutter pub get
 
       # ---------- LINT ----------
-      - name: Flutter analyze (fail on warnings & infos)
+      - name: Analyze (fail on infos & warnings)
         run: flutter analyze --fatal-infos --fatal-warnings
 
       # ---------- TEST + COVERAGE ----------
@@ -55,7 +52,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y lcov bc
 
-      - name: (Optional) Filter generated files from coverage
+      - name: Filter generated files from coverage (optional)
         run: |
           lcov --remove coverage/lcov.info \
             'lib/**.g.dart' 'lib/**.freezed.dart' 'lib/**.mocks.dart' \
