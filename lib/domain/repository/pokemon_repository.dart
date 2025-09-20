@@ -1,7 +1,7 @@
-import 'package:pokemondex/data/model/pokemon_detail_dto.dart';
-import 'package:pokemondex/data/model/pokemon_dto.dart';
+import 'package:pokemondex/domain/entity/pokemon_detail_spec.dart';
+import 'package:pokemondex/domain/entity/pokemon_spec.dart';
 
 abstract class PokemonRepository {
-  Future<List<PokemonDto>> fetchPokemonList(int first);
-  Future<PokemonDetailDto> fetchPokemonDetail(String id);
+  Future<List<PokemonSpec>> fetchPokemonList(int first);
+  Future<PokemonDetailSpec> fetchPokemonDetail(String id);
 }

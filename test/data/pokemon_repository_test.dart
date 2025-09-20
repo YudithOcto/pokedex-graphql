@@ -21,8 +21,8 @@ void main() {
     test('fetchPokemonList delegates to data source and returns DTOs', () async {
       when(() => remote.fetchPokemonList(2)).thenAnswer(
             (_) async =>  [
-          PokemonDto(id: 'id-1', name: 'Bulbasaur', image: 'u1', types: ['Grass', 'Poison']),
-          PokemonDto(id: 'id-2', name: 'Ivysaur',  image: 'u2', types: ['Grass', 'Poison']),
+          PokemonDto(id: 'id-1', name: 'Bulbasaur', image: 'u1', types: ['Grass', 'Poison'], number: "01"),
+          PokemonDto(id: 'id-2', name: 'Ivysaur',  image: 'u2', types: ['Grass', 'Poison'], number: "02"),
         ],
       );
 
