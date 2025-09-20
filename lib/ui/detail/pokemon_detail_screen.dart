@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pokemondex/common/image_loader.dart';
 import 'package:pokemondex/common/pokemon_helper.dart';
 import 'package:pokemondex/common/type_badge.dart';
 import 'package:pokemondex/core/custom_text_style.dart';
@@ -13,46 +14,53 @@ import 'bloc/pokemon_detail_state.dart';
 
 class PokemonDetailScreen extends StatelessWidget {
   final String pokemonId;
+
   const PokemonDetailScreen({super.key, required this.pokemonId});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocProvider(create: (_) => PokemonDetailBloc(sl())
-        ..add(LoadPokemonDetail(pokemonId)),
-      child: BlocBuilder<PokemonDetailBloc, PokemonDetailState>(
-        builder: (context, state) {
-          if (state is PokemonDetailLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is PokemonDetailLoaded) {
-            final p = state.detail;
-            return PokemonWidget(
-              name: p.name,
-              number: p.number,
-              imageUrl: p.imageUrl,
-              types: p.types,
-              classification: p.classification,
-              minHeight: p.minHeight,
-              maxHeight: p.maxHeight,
-              minWeight: p.minWeight,
-              maxWeight: p.maxWeight,
-              weaknesses: p.weaknesses,
-              resistant: p.resistant,
-              evolutions: p.evolutions,
-              evolutionRequirement: p.evolutionRequirement,
-              fastAttacks: p.fastAttacks,
-              specialAttacks: p.specialAttacks,
-              primaryColor: pokemonTypeFromString(p.types.first)?.color,
-            );
-          } else if (state is PokemonDetailError) {
-            return Center(
-                child: Text("Error: ${state.message}", textAlign: TextAlign.center));
-          }
-          return const SizedBox();
-        },
-      )),
+      body: BlocProvider(
+        create: (_) =>
+            PokemonDetailBloc(sl())..add(LoadPokemonDetail(pokemonId)),
+        child: BlocBuilder<PokemonDetailBloc, PokemonDetailState>(
+          builder: (context, state) {
+            if (state is PokemonDetailLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is PokemonDetailLoaded) {
+              final p = state.detail;
+              return PokemonWidget(
+                name: p.name,
+                number: p.number,
+                imageUrl: p.imageUrl,
+                types: p.types,
+                classification: p.classification,
+                minHeight: p.minHeight,
+                maxHeight: p.maxHeight,
+                minWeight: p.minWeight,
+                maxWeight: p.maxWeight,
+                weaknesses: p.weaknesses,
+                resistant: p.resistant,
+                evolutions: p.evolutions,
+                evolutionRequirement: p.evolutionRequirement,
+                fastAttacks: p.fastAttacks,
+                specialAttacks: p.specialAttacks,
+                primaryColor: pokemonTypeFromString(p.types.first)?.color,
+              );
+            } else if (state is PokemonDetailError) {
+              return Center(
+                child: Text(
+                  "Error: ${state.message}",
+                  textAlign: TextAlign.center,
+                ),
+              );
+            }
+            return const SizedBox();
+          },
+        ),
+      ),
     );
   }
-
 }
 
 class PokemonWidget extends StatelessWidget {
@@ -102,10 +110,11 @@ class PokemonWidget extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: primaryColor,
         leading: InkWell(
-            onTap: () {
-              context.pop();
-            },
-            child: Icon(Icons.adaptive.arrow_back, color: Colors.white)),
+          onTap: () {
+            context.pop();
+          },
+          child: Icon(Icons.adaptive.arrow_back, color: Colors.white),
+        ),
         titleSpacing: 0.0,
         title: Text(
           name,
@@ -146,7 +155,12 @@ class PokemonWidget extends StatelessWidget {
                             height: 20,
                           ),
                           const SizedBox(width: 4),
-                          Text(t, style: CustomTextStyle.body3.copyWith(color: Colors.white)),
+                          Text(
+                            t,
+                            style: CustomTextStyle.body3.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -223,36 +237,68 @@ class PokemonWidget extends StatelessWidget {
 
   Widget _buildEvolutionTab() {
     if (evolutions.isEmpty) {
-      return Center(child: Text("No evolutions", style: CustomTextStyle.headline5));
+      return Center(
+        child: Text("No evolutions", style: CustomTextStyle.headline5),
+      );
     }
+
+    // Insert the current Pokémon as the first step
+    final fullChain = [
+      {"name": name, "image": imageUrl, "requirement": null},
+      ...evolutions,
+    ];
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text(
-          "Requires: $evolutionRequirement",
-          style: CustomTextStyle.headline5,
-        ),
-        const SizedBox(height: 16),
-        Column(
+        if (evolutionRequirement.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Text(
+              "Requires: $evolutionRequirement",
+              style: CustomTextStyle.headline5,
+            ),
+          ),
+
+        // Evolution chain row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            for (int i = 0; i < evolutions.length; i++) ...[
+            for (int i = 0; i < fullChain.length; i++) ...[
               Column(
                 children: [
-                  Image.network(evolutions[i]["image"]!, height: 80),
-                  Text(
-                    evolutions[i]["name"]!,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                  ImageLoader(
+                    imageUrl: fullChain[i]["image"]!,
+                    height: (i + 1) * 40,
+                    width: (i + 1) * 40,
+                    fit: BoxFit.fill,
                   ),
+                  const SizedBox(height: 4),
+                  Text(fullChain[i]["name"]!, style: CustomTextStyle.body3),
                 ],
               ),
-              if (i < evolutions.length - 1)
+              if (i < fullChain.length - 1)
                 const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Icon(Icons.arrow_downward, size: 24),
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Icon(Icons.arrow_forward, size: 24),
                 ),
+            ],
+          ],
+        ),
+
+        const SizedBox(height: 24),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (int i = 0; i < fullChain.length - 1; i++) ...[
+              Text(
+                "- ${fullChain[i]["name"]} evolves into ${fullChain[i + 1]["name"]}"
+                "${fullChain[i + 1]["requirement"] != null ? " ${fullChain[i + 1]["requirement"]}" : ""}.",
+                style: CustomTextStyle.body3.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
             ],
           ],
         ),
@@ -264,16 +310,10 @@ class PokemonWidget extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-         Text(
-          "Fast Attacks",
-          style: CustomTextStyle.headline5,
-        ),
+        Text("Fast Attacks", style: CustomTextStyle.headline5),
         ...fastAttacks.map((a) => _buildAttackCard(a)),
         const SizedBox(height: 16),
-         Text(
-          "Special Attacks",
-          style: CustomTextStyle.headline5,
-        ),
+        Text("Special Attacks", style: CustomTextStyle.headline5),
         ...specialAttacks.map((a) => _buildAttackCard(a)),
       ],
     );
@@ -281,11 +321,17 @@ class PokemonWidget extends StatelessWidget {
 
   Widget _buildAttackCard(Map<String, dynamic> atk) {
     return Card(
-      color: pokemonTypeFromString(atk["type"])?.color ,
+      color: pokemonTypeFromString(atk["type"])?.color,
       margin: const EdgeInsets.symmetric(vertical: 6),
       child: ListTile(
-        title: Text(atk["name"], style: CustomTextStyle.caption1.copyWith(color: Colors.white),),
-        subtitle: Text("${atk["type"]} • Damage: ${atk["damage"]}", style: CustomTextStyle.caption1.copyWith(color: Colors.white),),
+        title: Text(
+          atk["name"],
+          style: CustomTextStyle.caption1.copyWith(color: Colors.white),
+        ),
+        subtitle: Text(
+          "${atk["type"]} • Damage: ${atk["damage"]}",
+          style: CustomTextStyle.caption1.copyWith(color: Colors.white),
+        ),
       ),
     );
   }
@@ -300,14 +346,17 @@ class PokemonWidget extends StatelessWidget {
             flex: 4,
             child: Text(
               label,
-              style: CustomTextStyle.caption1.copyWith(color: Colors.grey.shade700),
+              style: CustomTextStyle.caption1.copyWith(
+                color: Colors.grey.shade700,
+              ),
             ),
           ),
           Expanded(
             flex: 6,
             child: Text(
               value,
-              textAlign: TextAlign.left, // no right alignment, keeps natural flow
+              textAlign: TextAlign.left,
+              // no right alignment, keeps natural flow
               style: CustomTextStyle.body3,
             ),
           ),
