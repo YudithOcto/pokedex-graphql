@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pokemondex/core/di.dart';
 import 'package:pokemondex/core/router/app_router.dart';
-import 'package:pokemondex/ui/detail/pokemon_detail_screen.dart';
-import 'package:pokemondex/ui/list/pokemon_list_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

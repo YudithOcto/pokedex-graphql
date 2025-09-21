@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:pokemondex/domain/entity/pokemon_spec.dart';
-import 'package:pokemondex/ui/detail/pokemon_detail_screen.dart';
 import 'package:pokemondex/ui/list/bloc/pokemon_list_bloc.dart';
 import 'package:pokemondex/ui/list/pokemon_list_screen.dart';
 
