@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:pokemondex/core/constants.dart';
+import 'package:pokemondex/common/constants.dart';
 import 'custom_http_client.dart';
 
 Dio buildDio() {

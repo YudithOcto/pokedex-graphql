@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pokemondex/common/image_loader.dart';
 import 'package:pokemondex/common/pokemon_helper.dart';
 import 'package:pokemondex/common/type_badge.dart';
-import 'package:pokemondex/core/custom_text_style.dart';
+import 'package:pokemondex/common/custom_text_style.dart';
 import 'package:pokemondex/core/di.dart';
 import 'package:pokemondex/ui/detail/bloc/pokemon_detail_bloc.dart';
 
