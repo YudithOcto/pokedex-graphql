@@ -37,8 +37,10 @@ dependencies:
   dio: ^5.9.0
   get_it: ^8.2.0
   cached_network_image: ^3.4.1
-  provider: ^6.1.5+1
   equatable: ^2.0.7
+  flutter_bloc: ^9.1.1
+  flutter_svg: ^2.0.7
+  go_router: ^14.0.0
 
 dev_dependencies:
   flutter_test:
@@ -51,6 +53,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
   mocktail: ^1.0.3
+  bloc_test: ^10.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -62,6 +65,8 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - assets/icons/types/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

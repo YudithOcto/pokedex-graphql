@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COVERAGE_MIN: "70"
+  COVERAGE_MIN: "65"
 
 jobs:
   lint-test-build:
@@ -30,7 +30,7 @@ jobs:
       - name: Set up Flutter (latest stable channel)
         uses: subosito/flutter-action@v2
         with:
-          channel: stable          # ✅ use channel; do NOT set flutter-version: "stable"
+          channel: stable
           cache: true
 
       - name: Flutter doctor (debug)

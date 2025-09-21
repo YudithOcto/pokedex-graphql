@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:dio/dio.dart';
-import 'package:pokemondex/core/constants.dart';
+import 'package:pokemondex/common/constants.dart';
 import 'package:pokemondex/core/network/custom_http_client.dart';
 import 'package:pokemondex/core/network/dio_client.dart';
 
