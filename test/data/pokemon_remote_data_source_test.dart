@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pokemondex/core/network/custom_http_client.dart';
 import 'package:pokemondex/data/datasources/pokemon_remote_data_source.dart';
-import 'package:pokemondex/data/model/pokemon_detail_dto.dart';
 import 'package:pokemondex/data/model/pokemon_dto.dart';
 
 class _FakeHttpClient extends CustomHttpClient {
@@ -68,7 +67,57 @@ void main() {
       );
     });
 
-    test('fetchDetail returns PokemonDetailDto', () async {
+    test('fetchPokemons throws Exception when pokemons key is missing', () async {
+      final fakePayload = {
+        'data': {
+          // 'pokemons' key intentionally missing
+        }
+      };
+      final http = _FakeHttpClient(fakePayload);
+      final ds = DefaultPokemonRemoteDataSource(http);
+
+      expect(
+            () => ds.fetchPokemonList(2),
+        throwsA(isA<Exception>().having(
+              (e) => e.toString(),
+          'message',
+          contains('Pokemons list not found'),
+        )),
+      );
+    });
+
+    test('fetchPokemons returns empty list when no pokemons found', () async {
+      final fakePayload = {
+        'data': {
+          'pokemons': []
+        }
+      };
+      final http = _FakeHttpClient(fakePayload);
+      final ds = DefaultPokemonRemoteDataSource(http);
+
+      final result = await ds.fetchPokemonList(10);
+
+      expect(result, isEmpty);
+    });
+
+    test('fetchPokemons throws when data root is null', () async {
+      final fakePayload = {
+        'data': null,
+      };
+      final http = _FakeHttpClient(fakePayload);
+      final ds = DefaultPokemonRemoteDataSource(http);
+
+      expect(
+            () => ds.fetchPokemonList(5),
+        throwsA(isA<Exception>().having(
+              (e) => e.toString(),
+          'message',
+          contains('Pokemons list not found'),
+        )),
+      );
+    });
+
+    test('fetchDetail returns PokemonDto', () async {
       final fakePayload = {
         'data': {
           'pokemon': {
@@ -108,10 +157,65 @@ void main() {
 
       final detail = await ds.fetchPokemonDetail('Charmander');
 
-      expect(detail, isA<PokemonDetailDto>());
+      expect(detail, isA<PokemonDto>());
       expect(detail.name, 'Charmander');
       expect(detail.fastAttacks.first.name, 'Ember');
       expect(() => detail.types.add('X'), throwsUnsupportedError);
+    });
+
+    test('fetchDetail throws Exception when pokemon key is missing', () async {
+      final fakePayload = {
+        'data': {
+
+        }
+      };
+      final http = _FakeHttpClient(fakePayload);
+      final ds = DefaultPokemonRemoteDataSource(http);
+
+      expect(
+            () => ds.fetchPokemonDetail('Charmander'),
+        throwsA(isA<Exception>().having(
+              (e) => e.toString(),
+          'message',
+          contains('Pokemon not found'),
+        )),
+      );
+    });
+
+    test('fetchDetail throws when pokemon is explicitly null', () async {
+      final fakePayload = {
+        'data': {
+          'pokemon': null
+        }
+      };
+      final http = _FakeHttpClient(fakePayload);
+      final ds = DefaultPokemonRemoteDataSource(http);
+
+      expect(
+            () => ds.fetchPokemonDetail('Charmander'),
+        throwsA(isA<Exception>().having(
+              (e) => e.toString(),
+          'message',
+          contains('Pokemon not found'),
+        )),
+      );
+    });
+
+    test('fetchDetail throws when data key is missing', () async {
+      final fakePayload = <String, dynamic>{
+        // no "data" key at all
+      };
+      final http = _FakeHttpClient(fakePayload);
+      final ds = DefaultPokemonRemoteDataSource(http);
+
+      expect(
+            () => ds.fetchPokemonDetail('Charmander'),
+        throwsA(isA<Exception>().having(
+              (e) => e.toString(),
+          'message',
+          contains('Pokemon not found'),
+        )),
+      );
     });
   });
 }
